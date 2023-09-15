@@ -153,8 +153,15 @@ const patientSchema = new Schema({
   },
   asaClass: {
       type: String,
-      enum: ['Normal healthy patient', /* other ASA classes can go here */],
       required: true
+  },
+  theatre: {
+    type: String,
+    required: true
+  },
+  discipline: {
+    type: String,
+    required: true
   },
   unit: {
       type: String,
@@ -221,6 +228,12 @@ describeDelays: {
 cancelReason: {
     type: String,
     // If required, you can set `required: true`
+},
+theatreDone: {
+  type: String,
+},
+activeStatus: {
+  enum: ['Y', 'N'],
 }
 });
 
