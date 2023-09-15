@@ -221,6 +221,41 @@ patientLeavesOperatingRoom: {
     type: Date,
     // If required, you can set `required: true`
 },
+totalProcedureTime: {
+  type: Number,
+  // If required, you can set `required: true`
+},
+totalSurgicalTime: {
+  type: Number,
+  // If required, you can set `required: true`
+},
+totalEmptyTime: {
+  type: Number,
+  // If required, you can set `required: true`
+},
+numberOnList: {
+  type: Number,
+  // If required, you can set `required: true`
+},
+timeFromBooktoDO: {
+  type: Number,
+  // If required, you can set `required: true`
+},
+timeAdjusted: {
+  type: String,
+  enum: ['Y', 'N'],
+  // If required, you can set `required: true`
+},
+detailsEdited: {
+  type: String,
+  enum: ['Y', 'N'],
+  // If required, you can set `required: true`
+},
+orderChanged: {
+  type: String,
+  enum: ['Y', 'N'],
+  // If required, you can set `required: true`
+},
 describeDelays: {
     type: String,
     // If required, you can set `required: true`
@@ -229,9 +264,15 @@ cancelReason: {
     type: String,
     // If required, you can set `required: true`
 },
+
 theatreDone: {
   type: String,
 },
+dateDone: {
+  type: Date,
+  required: true
+},
+
 activeStatus: {
   enum: ['Y', 'N'],
 }
@@ -241,6 +282,75 @@ activeStatus: {
 const Patient = mongoose.model('Patient', patientSchema);
 
 module.exports = Patient;
+
+
+
+const logBookSchema = new Schema({
+  booked: {
+      type: Date,
+      required: true
+  },
+  hospitalNo: {
+      type: Number,
+      required: true,
+      unique: true
+  },
+  discipline: {
+      type: String,
+      required: true
+  },
+  operation: {
+      type: String,
+      required: true
+  },
+  anaesthesiologist: {
+      type: String,
+      required: true
+  },
+  status: {
+      type: String,
+      required: true
+  },
+  dateDone: {
+      type: Date,
+      required: true
+  },
+  anaestheticType: {
+      type: String,
+      required: true
+  },
+  anaestheticProcedure: {
+      type: String,
+      required: true
+  },
+  role: {
+      type: String,
+      required: true
+  },
+  totalProcedureTime: {
+      type: Number,  // Assuming you want this in minutes or some time unit
+      required: true
+  },
+  asaClass: {
+      type: String,
+      required: true
+  },
+  criticalIncident: {
+      type: String,  // Assuming you want a string description here
+      required: true
+  }
+  // ... you can add more fields here as required
+});
+
+module.exports = mongoose.model('LogBook', logBookSchema);
+
+
+
+
+
+
+
+
 
 
 
