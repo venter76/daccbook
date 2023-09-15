@@ -20,7 +20,7 @@ const cron = require('node-cron');
 // const serviceAccount = JSON.parse(rawData);
 
 // Google service account for production:
-// const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 
 
 
