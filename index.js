@@ -1007,75 +1007,17 @@ app.get('/homedashboard', checkAuthenticated, async function (req, res) {
 
 
 // redView
-app.get('/redView', function(req, res) {
-  console.log('Entered redView GET route');
-  res.render('redView', {
+app.get('/pendingView', function(req, res) {
+  console.log('Entered pendingView GET route');
+  res.render('pendingView', {
       success: req.flash('success'),
       error: req.flash('error')
   });
 });
 
-app.post('/redView', function(req, res) {
+app.post('/pendingView', function(req, res) {
   // Handle POST data here
-  res.redirect('/redView');  // Redirecting back to GET as an example
-});
-
-// orangeView
-app.get('/orangeView', function(req, res) {
-  console.log('Entered orangeView GET route');
-  res.render('orangeView', {
-      success: req.flash('success'),
-      error: req.flash('error')
-  });
-});
-
-app.post('/orangeView', function(req, res) {
-  // Handle POST data here
-  res.redirect('/orangeView');
-});
-
-
-// blueView
-app.get('/blueView', function(req, res) {
-  console.log('Entered blueView GET route');
-  res.render('blueView', {
-      success: req.flash('success'),
-      error: req.flash('error')
-  });
-});
-
-app.post('/blueView', function(req, res) {
-  // Handle POST data here
-  res.redirect('/blueView');
-});
-
-
-// greenView
-app.get('/greenView', function(req, res) {
-  console.log('Entered greenView GET route');
-  res.render('greenView', {
-      success: req.flash('success'),
-      error: req.flash('error')
-  });
-});
-
-app.post('/greenView', function(req, res) {
-  // Handle POST data here
-  res.redirect('/greenView');
-});
-
-// allView
-app.get('/allView', function(req, res) {
-  console.log('Entered allView GET route');
-  res.render('allView', {
-      success: req.flash('success'),
-      error: req.flash('error')
-  });
-});
-
-app.post('/allView', function(req, res) {
-  // Handle POST data here
-  res.redirect('/allView');
+  res.redirect('/pendingView');  // Redirecting back to GET as an example
 });
 
 // currentView
@@ -1091,6 +1033,9 @@ app.post('/currentView', function(req, res) {
   // Handle POST data here
   res.redirect('/currentView');
 });
+
+
+
 
 // adminView
 app.get('/adminView', function(req, res) {
@@ -1135,19 +1080,6 @@ app.post('/editDetailView', function(req, res) {
 });
 
 
-// electiveTheatreView
-app.get('/electiveTheatreView', function(req, res) {
-  console.log('Entered electiveTheatreView GET route');
-  res.render('electiveTheatreView', {
-      success: req.flash('success'),
-      error: req.flash('error')
-  });
-});
-
-app.post('/electiveTheatreView', function(req, res) {
-  // Handle POST data here
-  res.redirect('/electiveTheatreView');
-});
 
 
 
