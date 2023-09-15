@@ -125,6 +125,114 @@ const User = new mongoose.model("User", userSchema);
 module.exports = User;
 
 
+const patientSchema = new Schema({
+  booked: {
+      type: Date,
+      required: true
+  },
+  hospitalNo: {
+      type: Number,
+      required: true,
+      unique: true
+  },
+  name: {
+      type: String,
+      required: true
+  },
+  surname: {
+      type: String,
+      required: true
+  },
+  age: {
+      type: String,
+      required: true
+  },
+  urgency: {
+      type: String,
+      required: true
+  },
+  asaClass: {
+      type: String,
+      enum: ['Normal healthy patient', /* other ASA classes can go here */],
+      required: true
+  },
+  unit: {
+      type: String,
+      required: true
+  },
+  operation: {
+      type: String,
+      required: true
+  },
+  side: {
+      type: String,
+      required: true
+  },
+  anaesthesiologist: {
+      type: String,
+      required: true
+  },
+  bookingSurgeonAndCellNo: {
+      surgeon: {
+          type: String,
+          required: true
+      },
+      cellNo: {
+          type: String,
+          required: true
+      }
+  },
+  notes: {
+      type: String,
+      required: true
+  },
+  ward: {
+      type: String,
+      required: true
+  },
+  status: {
+      type: String,
+      required: true
+  },
+  investigations: {
+      type: String,
+      // If it's required, you can set `required: true`
+  },
+  anaestheticStartTime: {
+    type: Date,
+    // If required, you can set `required: true`
+},
+surgeryStartTime: {
+    type: Date,
+    // If required, you can set `required: true`
+},
+surgeryEndTime: {
+    type: Date,
+    // If required, you can set `required: true`
+},
+patientLeavesOperatingRoom: {
+    type: Date,
+    // If required, you can set `required: true`
+},
+describeDelays: {
+    type: String,
+    // If required, you can set `required: true`
+},
+cancelReason: {
+    type: String,
+    // If required, you can set `required: true`
+}
+});
+
+
+const Patient = mongoose.model('Patient', patientSchema);
+
+module.exports = Patient;
+
+
+
+
+
 
 
 
@@ -771,239 +879,157 @@ app.get('/homedashboard', checkAuthenticated, async function (req, res) {
 });
 
 
+// New routes codes:
 
 
 
-
-
-app.get('/assess', async (req, res) => {
-   // Fetch all registrars from the database
-   let registrars = [];
-   try {
-    registrars = await Registrar.find().sort({ surname: 1 });  // Sorting by surname in ascending order
-   } catch (err) {
-     console.error("Failed to retrieve registrars:", err);
-   }
- 
-   // Pass the flash message and the registrars to the ejs template
-   res.render('assess.ejs', { success: req.flash('success'), registrars: registrars });
- });
-
- 
-
-
-
-
-
-
-
-
-
-
-app.post('/assess', async (req, res) => {
-
-// Access the logged-in user's first name and surname
-const loggedInUserFirstName = req.user.firstname;
-const loggedInUserSurname = req.user.surname;
-
-  let formData = req.body;
-
-// Log the ratingValue
-console.log("ratingValue:", formData.rating);
-
-
-
-  // Handle form data
-
-  for(let key in formData) {
-
-  //    // Log the techsuperSc and techsuperPSc values
-  //    if(key.startsWith("techsuperSc") || key.startsWith("techsuperPSc")) {
-  //     console.log(`${key}: ${formData[key]}`);
-  // }
-    // check if the value of the key in the form data is 0 or null
-    // if yes then change it to null (not the string "null")
-    if(formData[key] === "0" || formData[key] === null || formData[key] === "null") {
-        formData[key] = null;
-    } else if (!isNaN(formData[key])) {
-        // convert numerical strings to numbers
-        formData[key] = Number(formData[key]);
-    }
-  }
-
-
-
-
-  // Separate staff data and score data
-  const staffData = {
-    regName: formData.regName,
-    // id: formData.id, // include this if you have an 'id' field
-    positiveComments: formData.positiveComments,
-    negativeComments: formData.negativeComments,
-    redComments: formData.redComments,
-  };
-
-  const scoreData = { ...formData, ratingValue: formData.rating };
-  delete scoreData.regName;
-  delete scoreData.positiveComments;
-  delete scoreData.negativeComments;
-  delete scoreData.redComments;
-  // delete scoreData.id; // include this if you have an 'id' field
-
-// Calculate the total and the count of acaScores
-let acaScoreTotal = 0;
-let acaScoreCount = 0;
-for (let i = 1; i <= 5; i++) {
-  if (scoreData[`acaScore${i}`] !== null) {
-    acaScoreTotal += scoreData[`acaScore${i}`];
-    acaScoreCount++;
-  }
-}
-
-// Calculate the total and the count of (adult) technicalScores
-let technicalScoreTotal = 0;
-let technicalScoreCount = 0;
-// *****************************************************************
-for (let i = 1; i <= 13; i++) {  
-  if (scoreData[`technicalScore${i}`] !== null) {
-    technicalScoreTotal += scoreData[`technicalScore${i}`];
-    technicalScoreCount++;
-  }
-}
-
-// Calculate the total and the count of (paediatric) technicalPScores
-let technicalPScoreTotal = 0;
-let technicalPScoreCount = 0;
-// *****************************************************************
-for (let i = 1; i <= 7; i++) {  
-  if (scoreData[`technicalPScore${i}`] !== null) {
-    technicalPScoreTotal += scoreData[`technicalPScore${i}`];
-    technicalPScoreCount++;
-  }
-}
-
-// Calculate the total and the count of nonScores
-let nonScoreTotal = 0;
-let nonScoreCount = 0;
-for (let i = 1; i <= 8; i++) {
-  if (scoreData[`nonScore${i}`] !== null) {
-    nonScoreTotal += scoreData[`nonScore${i}`];
-    nonScoreCount++;
-  }
-}
-
-// Calculate the average acaScore excluding null entries and assign to acaScoretotal
-if (acaScoreCount > 0) {
-  scoreData.acaScoretotal = acaScoreTotal / acaScoreCount;
-} else {
-  scoreData.acaScoretotal = null;
-}
-
-// Calculate the average technicalScore excluding null entries and assign to technicalScoretotal
-if (technicalScoreCount > 0) {
-  scoreData.technicalScoretotal = technicalScoreTotal / technicalScoreCount;
-} else {
-  scoreData.technicalScoretotal = null;
-}
-
-// Calculate the average technicalScore excluding null entries and assign to technicalPScoretotal
-if (technicalPScoreCount > 0) {
-  scoreData.technicalPScoretotal = technicalPScoreTotal / technicalPScoreCount;
-} else {
-  scoreData.technicalPScoretotal = null;
-}
-
-
-// Calculate the average nonScore excluding null entries and assign to nonScoretotal
-if (nonScoreCount > 0) {
-  scoreData.nonScoretotal = nonScoreTotal / nonScoreCount;
-} else {
-  scoreData.nonScoretotal = null;
-}
-
-// Create a new staff document
-const staff = new Staff({
-  ...staffData,
-  scores: [
-    {
-      ...scoreData,
-      consName: `${loggedInUserFirstName} ${loggedInUserSurname}` // Add consName to each scoreData object
-    }
-  ]
+// redView
+app.get('/redView', function(req, res) {
+  console.log('Entered redView GET route');
+  res.render('redView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
 });
 
-// Save the staff document
+app.post('/redView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/redView');  // Redirecting back to GET as an example
+});
 
-try {
-  const savedStaff = await staff.save();
-  console.log(savedStaff);
+// orangeView
+app.get('/orangeView', function(req, res) {
+  console.log('Entered orangeView GET route');
+  res.render('orangeView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
 
-  // Set the flash message
-  req.flash('success', 'Data submitted');
-
-  // Retrieve the flash message only once
-  const successMessage = req.flash('success');
-  
-  // Log the success message
-  console.log("Success message:", successMessage);
-
-  let registrars = [];
-try {
-  registrars = await Registrar.find();
-} catch (err) {
-  console.error("Failed to retrieve registrars:", err);
-}
-
-res.render('assess.ejs', { success: successMessage, registrars: registrars });
+app.post('/orangeView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/orangeView');
+});
 
 
-} catch (err) {
-  console.error(err);
-  req.flash('error', 'Error saving data');
-  res.redirect('/assess'); // redirect back to the assess page or another error page
-}
+// blueView
+app.get('/blueView', function(req, res) {
+  console.log('Entered blueView GET route');
+  res.render('blueView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/blueView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/blueView');
+});
 
 
+// greenView
+app.get('/greenView', function(req, res) {
+  console.log('Entered greenView GET route');
+  res.render('greenView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
 
+app.post('/greenView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/greenView');
+});
+
+// allView
+app.get('/allView', function(req, res) {
+  console.log('Entered allView GET route');
+  res.render('allView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/allView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/allView');
+});
+
+// currentView
+app.get('/currentView', function(req, res) {
+  console.log('Entered currentView GET route');
+  res.render('currentView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/currentView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/currentView');
+});
+
+// adminView
+app.get('/adminView', function(req, res) {
+  console.log('Entered adminView GET route');
+  res.render('adminView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/adminView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/adminView');
+});
+
+// adjustTimeView
+app.get('/adjustTimeView', function(req, res) {
+  console.log('Entered adjustTimeView GET route');
+  res.render('adjustTimeView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/adjustTimeView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/adjustTimeView');
+});
+
+// editDetailView
+app.get('/editDetailView', function(req, res) {
+  console.log('Entered editDetailView GET route');
+  res.render('editDetailView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/editDetailView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/editDetailView');
+});
+
+
+// electiveTheatreView
+app.get('/electiveTheatreView', function(req, res) {
+  console.log('Entered electiveTheatreView GET route');
+  res.render('electiveTheatreView', {
+      success: req.flash('success'),
+      error: req.flash('error')
+  });
+});
+
+app.post('/electiveTheatreView', function(req, res) {
+  // Handle POST data here
+  res.redirect('/electiveTheatreView');
 });
 
 
 
 
 
-
-
-
-
-app.post('/dateList2', async (req, res) => {
-  try {
-      const selectedDate = new Date(req.body.dateInput);
-      console.log(selectedDate);
-
-      const results = await Staff.find({ "scores.date": selectedDate }).exec();
-
-      const data = results.reduce((acc, doc) => {
-          doc.scores.forEach(score => {
-              if (score.date && score.date.toISOString() === selectedDate.toISOString()) {
-                  acc.push({
-                      regName: doc.regName,
-                      theatreName: score.theatreName
-                  });
-              }
-          });
-          return acc;
-      }, []);
-
-      console.log(data);
-
-      // Render the finalList.ejs page and pass the data
-      res.render('finalList', { date: selectedDate, data: data });
-
-  } catch (err) {
-      console.error("There was an error fetching the data:", err);
-      res.status(500).send('Server Error');
-  }
-});
 
 
 
@@ -1013,22 +1039,6 @@ app.get('/admin', checkAuthenticated, ensureAdmin, (req, res) => {
 // Pass the flash message to the ejs template
 res.render('admin.ejs', { success: req.flash('success') });
 });
-
-
-
-
-
-
-
-
-app.get('/howto', (req, res) => {
-  res.render('howto');
-  
-});
-
-
-
-
 
 
 
@@ -1054,195 +1064,7 @@ app.get('/report', checkAuthenticated, ensureAdmin, async (req, res) => {
 
 
 
-// PLACE NAME ADJUSTERS *************************************************
 
-app.post('/reportdig', async (req, res) => {
-   
-  let regName = req.body.regName;
-
-  // Check if date values are provided before creating Date objects
-  let dateFrom = req.body.dateFrom ? new Date(req.body.dateFrom) : null;
-  let dateTo = req.body.dateTo ? new Date(req.body.dateTo) : null;
-
-  console.log("regName:", regName);
-  console.log("dateFrom:", dateFrom);
-  console.log("dateTo:", dateTo);
-  
-  try {
-    // Create a base query and then conditionally add date range
-    let query = { regName: regName };
-    
-    if (dateFrom && dateTo) {
-      query["scores.date"] = { $gte: dateFrom, $lte: dateTo };
-    }
-
-    const staffData = await Staff.find(query);
-
-    if (!staffData || staffData.length === 0) {
-      console.log(`No staff found with name: ${regName}`);
-      
-      // Set the flash message
-      req.flash('error', `No data for selected dates for: ${regName}`);
-      
-      
-      return res.redirect('/report');
-    }
-
-
-
-    // if (!staffData || staffData.length === 0) {
-    //   console.log(`No staff found with regName: ${regName}`);
-    //   return res.status(404).send(`No staff found with regName: ${regName}`);
-    // }
-
-    let scoresData = []; // This will contain all the score data for each staff member
-    let positiveCommentsArray = [];
-    let negativeCommentsArray = [];
-    let redCommentsArray = [];
-
-
-    // console.log("Entering staffData loop...");
-
-    staffData.forEach(doc => {
-
-      // console.log("Processing a staff document...");
-      // console.log("Current doc:", JSON.stringify(doc, null, 2));
-
-      // Push the comments from this document to the respective arrays
-      if (doc.positiveComments && doc.positiveComments !== '0') positiveCommentsArray.push(doc.positiveComments);
-      if (doc.negativeComments && doc.negativeComments !== '0') negativeCommentsArray.push(doc.negativeComments);
-      if (doc.redComments && doc.redComments !== '0') redCommentsArray.push(doc.redComments);
-
-      doc.scores.forEach(score => {
-
-    
-
-
-          // Construct an object with only the needed data
-          let scoreData = {
-              date: score.date,
-              acaScoretotal: score.acaScoretotal,
-              technicalScoretotal: score.technicalScoretotal,
-              technicalPScoretotal: score.technicalPScoretotal,
-              nonScoretotal: score.nonScoretotal,
-              ratingValue: score.ratingValue,
-          };
-          scoresData.push(scoreData);
-      });
-    });
-  
-    // Sort scoresData based on the date field
-    scoresData.sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-    // console.log(scoresData);
-
-    let acaScoreSum = scoresData.reduce((accum, score) => accum + score.acaScoretotal, 0);
-    let technicalScoreSum = scoresData.reduce((accum, score) => accum + score.technicalScoretotal, 0);
-    let technicalPScoreSum = scoresData.reduce((accum, score) => accum + score.technicalPScoretotal, 0);
-    let nonScoreSum = scoresData.reduce((accum, score) => accum + score.nonScoretotal, 0);
-
-    let scoresLength = scoresData.length || 1;  // Avoid division by zero
-    let acaScoreAverage = acaScoreSum / scoresLength;
-    let technicalScoreAverage = technicalScoreSum / scoresLength;
-    let technicalPScoreAverage = technicalPScoreSum / scoresLength;
-    let nonScoreAverage = nonScoreSum / scoresLength;
-
-    // console.log('Average Academic Score:', acaScoreAverage);
-    // console.log('Average Technical Score:', technicalScoreAverage);
-    // console.log('Average Paeds Technical Score:', technicalPScoreAverage);
-    // console.log('Average Non-Technical Score:', nonScoreAverage);
-
-    const analyzedScores = analyzeScores(staffData);
-    // console.log(analyzedScores);
-    
-
-    
-   
-
-const scoreNameMapping = {
-  acaScore1: "Pre-op Assessment",
-  acaScore2: "Peri-op Management",
-  acaScore3: "Academic / Clinical Knowledge",
-  acaScore4: "Data Interpretation",
-  acaScore5: "Interest in Teaching",
-  technicalScore1: "CVP",
-    technicalScore2: "Arterial Line",
-    technicalScore3: "Lumbar Epidural",
-    technicalScore4: "Thoracic Epidural",
-    technicalScore5: "Spinal Anaesthesia",
-    technicalScore6: "Nerve Block",
-    technicalScore7: "Airway management",
-    technicalScore8: "Fibreoptic intubation",
-    technicalScore9: "Double-lumen Tube",
-    technicalScore10: "FATE skills",
-    technicalScore11: "TOE skills",
-    technicalScore12: "Pulmonary Artery Catheter",
-    technicalScore13: "Haemodynamic Management",
-
-    technicalPScore1: "IV cannula",
-    technicalPScore2: "Arterial Line",
-    technicalPScore3: "CVP",
-    technicalPScore4: "Airway management",
-    technicalPScore5: "Caudal anaesthesia",
-    technicalPScore6: "Epidural anaesthesia",
-    technicalPScore7: "General Care",
-
-    nonScore1: "Critical Descision Making",
-    nonScore2: "Attention to Detail",
-    nonScore3: "Communication with Colleagues",
-    nonScore4: "Communication with Patients",
-    nonScore5: "Presentation Skills",
-    nonScore6: "Professionalism",
-    nonScore7: "Independance",
-    nonScore8: "Logistics/Organisational Skills",
-
-    ratingValue: "Overall Impression",
-};
- 
-
-const humanReadableScores = {};
-
-for (let key in analyzedScores) {
-    const newName = scoreNameMapping[key] || key;  
-    humanReadableScores[newName] = analyzedScores[key];
-}
-
-// Console log the mapped scores
-// console.log('Mapped Scores:', humanReadableScores);
-
-
-// Now, pass humanReadableScores to your view (ejs)
-
-  
-    // Render the page and pass the data
-    res.render('reportdig', {
-      regName: regName,
-      scoresData: scoresData,
-      acaScoreAverage: acaScoreAverage,
-      technicalScoreAverage: technicalScoreAverage,
-      technicalPScoreAverage: technicalPScoreAverage,
-      nonScoreAverage: nonScoreAverage,
-      positiveComments: positiveCommentsArray,
-      negativeComments: negativeCommentsArray,
-      redComments: redCommentsArray,
-      analyzedData: humanReadableScores
-    });
-
-  } catch(err) {
-    console.error(err);
-    res.status(500).send('Server Error');
-  }
-});
-
-
-
-
-
-
-
-
-
-// *****************************************************************
 
 
 // Route to push to Google SHeets (this is run automatically with node-cron)
@@ -1501,29 +1323,7 @@ app.get('/reglist', async (req, res) => {
 
 
 
-// app.get('/pdf', async (req, res) => {
-//   const { url } = req.query;
 
-//   if (!url) {
-//     return res.status(400).send('URL is required');
-//   }
-
-//   try {
-//     // Generate PDF using printPDF function
-//     const pdf = await createPdf(url);
-
-//     // Set the response headers to specify the PDF content type and disposition.
-//     res.set({ 'Content-Type': 'application/pdf', 'Content-Length': pdf.length });
-
-//     // Send the PDF as the response
-//     res.send(pdf);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('An error occurred while generating the PDF');
-//   }
-// });
-
- 
 
 cron.schedule('0 * * * *', async () => {
   console.log('Running the task every 1 hours');
@@ -1552,34 +1352,4 @@ connectDB().then(() => {
 
 
 
-  // async function createOrUpdateInfo() {
-
-//   const enter = process.env.ENTER;
-//   const password = process.env.PASSWORD;
-
-  
-
-
-//   // Hash the password
-//   const salt = await bcrypt.genSalt(10);
-//   const hashedPassword = await bcrypt.hash(password, salt);
-
-//   // Check if Info collection already has an entry
-//   const info = await Info.findOne({});
-
-//   if (info) {
-//     // Info collection has an entry, update it
-//     info.enter = enter;
-//     info.password = hashedPassword;
-//     await info.save();
-//   } else {
-//     // Info collection is empty, create a new entry
-//     const newInfo = new Info({ enter, password: hashedPassword });
-//     await newInfo.save();
-//   }
-
-//   console.log('Username and password have been saved to the database.');
-// }
-
-// // Run the function
-// createOrUpdateInfo().catch(console.error);
+ 
